@@ -1,3 +1,19 @@
+# Data
+*.csv
+*.log
+*.sql
+*.xls
+*.xlsx
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.tif
+*.mp4
+*.avi
+*.mov
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

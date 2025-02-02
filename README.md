@@ -115,3 +115,11 @@ Also provide some code or pseudocode that code serve as a starting point to this
 - The web in general
 - Which dataset to use? Global or Local? Cars only?
     - Since from our talk the problem is initially set in Brazil I would focus here, but if it's not that hard to use/develop a model for global plate recog, I would use one (also check its performance on a brazilian plate dataset)
+
+Some useful datasets/links:
+- https://www.kaggle.com/datasets/andrewmvd/car-plate-detection
+- https://universe.roboflow.com/roboflow-universe-projects/license-plate-recognition-rxg4e
+- https://github.com/ramajoballester/UC3M-LP
+- https://www.kaggle.com/datasets/fareselmenshawii/large-license-plate-dataset
+
+Found 2 sample videos for iterative testing (here a the links: sample.mp4 and sample2.mp4)
