@@ -129,6 +129,7 @@ def main(input_type, input_path):
 
                 frame = process_frame(frame, analysis_area)
                 print_results(unique_license_plates, frame_counter)
+                save_recognized_plates(unique_license_plates, min_occurences)
                 cv2.imshow("License Plate Recognition", frame)
 
                 if SAVE_VIDEO:
@@ -152,6 +153,8 @@ def main(input_type, input_path):
             (HEIGHT_PART_ANALYSYS - 1) * h // HEIGHT_PART_ANALYSYS,
         )
         frame = process_frame(frame, analysis_area)
+        print_results(unique_license_plates, 0)
+        save_recognized_plates(unique_license_plates, min_occurences)
         cv2.imshow("License Plate Recognition", frame)
         cv2.waitKey(0)
         

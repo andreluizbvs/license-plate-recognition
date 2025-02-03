@@ -102,6 +102,7 @@ plate-ocr --type image --path path/to/your/image.jpg
             - Just had a new idea: I could stitch together all the vehicles detected in one single image and run the license plate model on it only once. This would decrease the total inference time to n + m + v * k
             - Not a good idea actually, because of image resizing for model input.
         - Sometimes is hard enough to keep one inference in real-time!
+    - If the vehicle occupies the entire frame, the first step may fail!
 
 ### Approach #2
 

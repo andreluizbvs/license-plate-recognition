@@ -12,6 +12,7 @@
 *.mp4
 *.avi
 *.mov
+*.txt
 
 
 # Byte-compiled / optimized / DLL files

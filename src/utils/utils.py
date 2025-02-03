@@ -1,9 +1,11 @@
 import json
 import os
 import re
+from pathlib import Path
 
 import cv2
 import numpy as np
+
 
 from src.configs import (
     IOU_PROPORTION,
@@ -13,6 +15,9 @@ from src.configs import (
     MIN_LICENSE_PLATE_AREA_PERCENTAGE,
     MIN_OCCURENCES,
 )
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def generate_new_file_name(file_path):
@@ -25,7 +30,10 @@ def generate_new_file_name(file_path):
     return new_file_path
 
 
-def save_recognized_plates(unique_license_plates, min_occurences=MIN_OCCURENCES):
+def save_recognized_plates(
+    unique_license_plates, min_occurences=MIN_OCCURENCES
+):
+    print(min_occurences)
     recognized_license_plates_file = generate_new_file_name(
         "recognized_license_plates.json"
     )
@@ -41,10 +49,14 @@ def save_recognized_plates(unique_license_plates, min_occurences=MIN_OCCURENCES)
     license_plates_frequency = sorted(
         unique_license_plates.items(), key=lambda x: x[1], reverse=True
     )
-    base = "../results/"
-    os.makedirs(base, exist_ok=True)
-    recognized_license_plates_file = os.path.join(base, recognized_license_plates_file)
-    license_plates_frequency_file = os.path.join(base, license_plates_frequency_file)
+
+    os.makedirs(BASE_DIR, exist_ok=True)
+    recognized_license_plates_file = str(
+        BASE_DIR / 'results' / recognized_license_plates_file
+    )
+    license_plates_frequency_file = str(
+        BASE_DIR / 'results' / license_plates_frequency_file
+    )
     json.dump(
         list(frequent_plates.items()), open(recognized_license_plates_file, "w")
     )
@@ -133,7 +145,12 @@ def is_inside_predefined_area(xyxy, area):
     return inter_area >= IOU_PROPORTION * object_area
 
 
-def filter_detections_inside_area(results, analysis_area, frame_area, min_license_plate_area_percentage = MIN_LICENSE_PLATE_AREA_PERCENTAGE):
+def filter_detections_inside_area(
+    results,
+    analysis_area,
+    frame_area,
+    min_license_plate_area_percentage=MIN_LICENSE_PLATE_AREA_PERCENTAGE,
+):
     if results is None:
         return None
     inside_area_indices = is_inside_predefined_area(
@@ -166,7 +183,9 @@ def preprocess_for_ocr(image):
     return image
 
 
-def extract_text_from_bounding_boxes(frame, results, ocr_model, unique_license_plates):
+def extract_text_from_bounding_boxes(
+    frame, results, ocr_model, unique_license_plates
+):
     texts = []
     if results is None:
         return texts

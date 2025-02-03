@@ -9,7 +9,6 @@ RESIZE_FACTOR = 2
 SAVE_VIDEO = False
 VEHICLE_WEIGHTS_PATH = str(BASE_DIR / 'weights' / 'yolo11n.pt')
 LICENSE_PLATE_WEIGHTS_PATH = str(BASE_DIR / 'weights' / 'license_plate_detector.pt')
-VIDEO_PATH = "../data/sample.mp4"
 CONF_TH = 0.2  # Confidence threshold to show the annotation and count the object
 HEIGHT_PART_ANALYSYS = 1000  # Analysis area height (the higher the number, the bigger the part of the frame to be analyzed. if its is "12", then the first and the last 1/12 of the frame will not be analyzed)
 IOU_PROPORTION = 0.8  # Proportion of the object that has to be inside the analysis area to be considered
