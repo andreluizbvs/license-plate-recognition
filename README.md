@@ -123,3 +123,8 @@ Some useful datasets/links:
 - https://www.kaggle.com/datasets/fareselmenshawii/large-license-plate-dataset
 
 Found 2 sample videos for iterative testing (here a the links: sample.mp4 and sample2.mp4)
+
+## References (models, weights, data, etc.)
+
+- https://github.com/ankandrew/fast-plate-ocr
+- https://github.com/Muhammad-Zeerak-Khan/Automatic-License-Plate-Recognition-using-YOLOv8

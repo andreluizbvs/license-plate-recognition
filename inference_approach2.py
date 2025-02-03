@@ -1,3 +1,5 @@
+import json
+import os
 import re
 from time import time
 
@@ -14,12 +16,12 @@ CONTOUR_THICKNESS = 5
 RESIZE_FACTOR = 2
 SAVE_VIDEO = False
 LICENSE_PLATE_WEIGHTS_PATH = "./weights/license_plate_detector.pt"
-VIDEO_PATH = "./data/sample2.mp4"
+VIDEO_PATH = "./data/sample.mp4"
 CONF_TH = 0.2  # Confidence threshold to show the annotation and count the object
 HEIGHT_PART_ANALYSYS = 1000 # Analysis area height (the higher the number, the bigger the part of the frame to be analyzed. if its is "12", then the first and the last 1/12 of the frame will not be analyzed)
 IOU_PROPORTION = 0.8  # Proportion of the object that has to be inside the analysis area to be considered
 MIN_PLATE_AREA_PERCENTAGE = 0.00125  # Minimum license plate area percentage of the input image area
-MIN_OCCURENCES = 15  # Minimum number of occurences to be considered a correctly recognized license plate
+MIN_OCCURENCES = 20  # Minimum number of occurences to be considered a correctly recognized license plate
 
 # Global instances
 license_plate_model = YOLO(LICENSE_PLATE_WEIGHTS_PATH) # Detect license plates in vehicles bboxes
@@ -77,15 +79,11 @@ def is_inside_predefined_area(xyxy, area):
     return inter_area >= IOU_PROPORTION * object_area
 
 
-def preprocess(frame):
-    return apply_clahe_to_frame(frame)
-
-
-def predict(frame):
-    return license_plate_model.track(frame, persist=True, verbose=False)[0]
 
 
 def filter_detections_inside_area(results, analysis_area, frame_area):
+    if results is None:
+        return None
     inside_area_indices = is_inside_predefined_area(results.boxes.xyxy.cpu().numpy(), analysis_area)
     valid_indices = inside_area_indices
     for i, box in enumerate(results.boxes):
@@ -99,7 +97,9 @@ def filter_detections_inside_area(results, analysis_area, frame_area):
     return None
 
 
-def annotate_frame(frame, results, texts):   
+def annotate_frame(frame, results, texts):
+    if results is None:
+        return frame
     for box, text in zip(results.boxes, texts):
         x1, y1, x2, y2 = map(int, box.xyxy.cpu().numpy().flatten())
         conf = float(box.conf.cpu().numpy())
@@ -141,6 +141,8 @@ def preprocess_for_ocr(image):
 
 def extract_text_from_bounding_boxes(frame, results):
     texts = []
+    if results is None:
+        return texts
     for box in results.boxes:
         x1, y1, x2, y2 = map(int, box.xyxy.cpu().numpy().flatten())
         cropped_image = frame[y1:y2, x1:x2]
@@ -152,25 +154,38 @@ def extract_text_from_bounding_boxes(frame, results):
             texts.append(cleaned_text)
             if cleaned_text:
                 unique_license_plates[cleaned_text] = unique_license_plates.get(cleaned_text, 0) + 1
-        else:
-            texts.append("")
     return texts
+
+
+def preprocess(frame):
+    return apply_clahe_to_frame(frame)
+
+
+def predict(frame):
+    return license_plate_model.track(frame, persist=True, verbose=False)[0]
 
 
 def postprocess(frame, results, analysis_area):
     frame_height, frame_width = frame.shape[:2]
     frame_area = frame_height * frame_width
 
-    results = results[results.boxes.conf > CONF_TH] if results else None
-    
-    if results is not None:
-        results = filter_detections_inside_area(results, analysis_area, frame_area)
-    if results is not None:
-        texts = extract_text_from_bounding_boxes(frame, results)
-        frame = annotate_frame(frame, results, texts)
+    results = results[results.boxes.conf > CONF_TH] if results else None    
+    results = filter_detections_inside_area(results, analysis_area, frame_area)
+    texts = extract_text_from_bounding_boxes(frame, results)
+    frame = annotate_frame(frame, results, texts)
     
     draw_analysis_area(frame, analysis_area)
     return adaptive_resize(frame)
+
+
+def generate_new_file_name(file_path):
+    base, ext = os.path.splitext(file_path)
+    counter = 1
+    new_file_path = f"{base}_run{counter}{ext}"
+    while os.path.exists(new_file_path):
+        counter += 1
+        new_file_path = f"{base}_run{counter}{ext}"
+    return new_file_path
 
 
 def main():
@@ -195,6 +210,8 @@ def main():
         "seconds",
     )
 
+    frame_counter = 0
+
     with sv.VideoSink(
         target_path=VIDEO_PATH.replace(".mp4", "_labeled.mp4"),
         video_info=video_info,
@@ -203,7 +220,7 @@ def main():
             start = time()
 
             ret, frame = cap.read()
-            if not ret:
+            if not ret or frame_counter > 100:
                 break
             
             frame = preprocess(frame)
@@ -213,17 +230,28 @@ def main():
             if SAVE_VIDEO:
                 s.write_frame(frame=frame)
 
-            total_proc_time = int((time() - start) * 1000)
 
             cv2.imshow("License Plate Recognition", frame)
             frequent_plates = {plate: count for plate, count in unique_license_plates.items() if count >= MIN_OCCURENCES}
-            print("Recognized License Plates:", list(frequent_plates.keys()))
+            frame_counter += 1
+            if frame_counter % MIN_OCCURENCES == 0:
+                print("Recognized License Plates:", list(frequent_plates.keys()))
+                if frame_counter % (MIN_OCCURENCES * 10) == 0:
+                    print("License Plates Counter:", sorted(unique_license_plates.items(), key=lambda x: x[1], reverse=True))
+            
+            total_proc_time = int((time() - start) * 1000)
             if cv2.waitKey(max(1, 33 - total_proc_time)) & 0xFF == ord("q"):
                 break
 
     cap.release()
     cv2.destroyAllWindows()
 
+    recognized_license_plates_file = generate_new_file_name("recognized_license_plates.json")
+    license_plates_frequency_file = generate_new_file_name("license_plates_frequency.json")
+
+    license_plates_frequency = sorted(unique_license_plates.items(), key=lambda x: x[1], reverse=True)
+    json.dump(frequent_plates, open(recognized_license_plates_file, "w"))
+    json.dump(license_plates_frequency, open(license_plates_frequency_file, "w"))
 
 if __name__ == "__main__":
     main()
