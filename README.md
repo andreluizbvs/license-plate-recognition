@@ -122,7 +122,7 @@ Some useful datasets/links:
 - https://github.com/ramajoballester/UC3M-LP
 - https://www.kaggle.com/datasets/fareselmenshawii/large-license-plate-dataset
 
-Found 2 sample videos for iterative testing (here a the links: sample.mp4 and sample2.mp4)
+Found 2 sample videos for iterative testing (here a the links: [sample.mp4](https://drive.google.com/file/d/1otrBjr0GycUVr-gTBb4pAyjD85ftQ5tO/view?usp=drive_link) and [sample2.mp4](https://drive.google.com/file/d/1mk2VZE2TNbFAHUaUVZK4O4uYDrWYnWih/view?usp=drive_link))
 
 ## References (models, weights, data, etc.)
 
