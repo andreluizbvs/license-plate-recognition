@@ -97,7 +97,7 @@ def draw_area(frame, area):
 
 def draw_text(frame, label, x1, y1):
     cv2.putText(
-        frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 3.0, GREEN, 6
+        frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.0, GREEN, 3
     )
     return frame
 

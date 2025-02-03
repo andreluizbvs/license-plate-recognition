@@ -46,12 +46,11 @@ def annotate_frame(frame, results, texts):
         return frame
     for box, text in zip(results.boxes, texts):
         x1, y1, x2, y2 = map(int, box.xyxy.cpu().numpy().flatten())
-        conf = float(box.conf.cpu().numpy())
         cls = int(box.cls.cpu().numpy())
         label = (
-            f"{text} {conf:.2f}"
+            f"{text}"
             if text
-            else f"{license_plate_model.names[cls]} {conf:.2f}"
+            else f"{license_plate_model.names[cls]}"
         )
         draw_area(frame, (x1, y1, x2, y2))
         draw_text(frame, label, x1, y1)
