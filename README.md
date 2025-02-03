@@ -1,10 +1,61 @@
 # License Plate Recognition
-Code repository for the a system that given an image, returns the all license plates information (characters, origin, etc.) from it.
-
+Code repository for the a system that retrieves the information of license plates given an image or video.
 
 ## Installation
 
+### Using pip
 
+1. **Download the wheel file:**
+
+    Download the latest wheel file from the [releases page](https://github.com/andreluizbvs/license-plate-recognition/releases).
+
+2. **Install the wheel file:**
+
+    ```sh
+    pip install path/to/plate_ocr-<version>-py3-none-any.whl
+    ```
+
+
+### Using Poetry
+
+1. **Clone the repository:**
+
+    ```sh
+    git clone https://github.com/andreluizbvs/license-plate-recognition.git
+    cd license-plate-recognition
+    ```
+
+2. **Install Poetry:**
+
+    Follow the instructions on the [Poetry website](https://python-poetry.org/docs/#installation) to install Poetry.
+
+3. **Install dependencies:**
+
+    ```sh
+    poetry install
+    ```
+
+## Usage
+
+You can use the CLI to process videos or images to extract license plate information.
+
+### Process a Video
+
+```sh
+plate-ocr --type video --path path/to/your/video.mp4
+```
+
+### Process an Image
+
+```sh
+plate-ocr --type image --path path/to/your/image.jpg
+```
+
+#### Options
+
+`--approach`: Choose the approach to use: 1 (slower & more accurate) or 2 (faster & less accurate). Default is 2. More details on the approaches check the report below.
+`--type`: Specify the type of input (video or image). This option is required.
+`--path`: Path to the video or image file. This option is required.
 
 # Chain of thought for 1st steps for developing this project
 
