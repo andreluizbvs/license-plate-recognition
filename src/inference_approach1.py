@@ -1,5 +1,3 @@
-import json
-import os
 from time import time
 
 import cv2
@@ -9,13 +7,14 @@ from ultralytics import YOLO
 from fast_plate_ocr import ONNXPlateRecognizer
 
 from utils.utils import (
-    clean_license_plate,
     adaptive_resize,
     apply_clahe_to_frame,
-    is_inside_predefined_area,
+    filter_detections_inside_area,
     draw_area,
     draw_text,
-    generate_new_file_name,
+    print_results,
+    save_recognized_plates,
+    extract_text_from_bounding_boxes,
 )
 from configs import (
     CONTOUR_THICKNESS,
@@ -26,9 +25,11 @@ from configs import (
     CONF_TH,
     HEIGHT_PART_ANALYSYS,
     MIN_CAR_AREA_PERCENTAGE,
-    MIN_LICENSE_PLATE_AREA_PERCENTAGE,
-    MIN_OCCURENCES,
     VEHICLE_CLASS_IDS,
+)
+
+MIN_LICENSE_PLATE_AREA_PERCENTAGE = (
+    0.01  # Minimum license plate area percentage of the input image area
 )
 
 # Global instances
@@ -44,53 +45,15 @@ ocr_model = ONNXPlateRecognizer(
 unique_license_plates = {}
 
 
-def filter_detections_inside_area(results, analysis_area, frame_area):
-    if results is None:
-        return None
-    inside_area_indices = is_inside_predefined_area(
-        results.boxes.xyxy.cpu().numpy(), analysis_area
-    )
-    x1, y1, x2, y2 = results.boxes.xyxy.cpu().numpy().T
-    object_area = (x2 - x1) * (y2 - y1)
-    valid_indices = inside_area_indices & (
-        object_area / frame_area < MIN_LICENSE_PLATE_AREA_PERCENTAGE
-    )
-    if np.any(valid_indices):
-        return results[valid_indices]
-    return None
-
-
-def preprocess_for_ocr(image):
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    image = apply_clahe_to_frame(image)
-    return image
-
-
-def extract_text_from_bounding_boxes(frame, results):
-    texts = []
-    if results is None:
-        return texts
-    for box in results.boxes:
-        x1, y1, x2, y2 = map(int, box.xyxy.cpu().numpy().flatten())
-        cropped_image = frame[y1:y2, x1:x2]
-        cropped_image = preprocess_for_ocr(cropped_image)
-        text = ocr_model.run(cropped_image)
-        if text:
-            cleaned_text = clean_license_plate(text[0])
-            if cleaned_text:
-                texts.append(cleaned_text)
-                unique_license_plates[cleaned_text] = (
-                    unique_license_plates.get(cleaned_text, 0) + 1
-                )
-    return texts
-
-
 def postprocess_license_plate(frame, results, analysis_area):
     frame_area = frame.shape[0] * frame.shape[1]
     results = results[results.boxes.conf > CONF_TH] if results else None
-    results = filter_detections_inside_area(results, analysis_area, frame_area)
-    texts = extract_text_from_bounding_boxes(frame, results)
-    return texts
+    results = filter_detections_inside_area(
+        results, analysis_area, frame_area, MIN_LICENSE_PLATE_AREA_PERCENTAGE
+    )
+    return extract_text_from_bounding_boxes(
+        frame, results, ocr_model, unique_license_plates
+    )
 
 
 def preprocess(frame):
@@ -148,49 +111,6 @@ def process_frame(frame, analysis_area):
     return postprocess(frame, license_plate_crops)
 
 
-def save_recognized_plates():
-    recognized_license_plates_file = generate_new_file_name(
-        "recognized_license_plates.json"
-    )
-    license_plates_frequency_file = generate_new_file_name(
-        "license_plates_frequency.json"
-    )
-
-    frequent_plates = {
-        plate: count
-        for plate, count in unique_license_plates.items()
-        if count >= MIN_OCCURENCES
-    }
-    license_plates_frequency = sorted(
-        unique_license_plates.items(), key=lambda x: x[1], reverse=True
-    )
-    json.dump(
-        list(frequent_plates.items()), open(recognized_license_plates_file, "w")
-    )
-    json.dump(
-        license_plates_frequency, open(license_plates_frequency_file, "w")
-    )
-
-
-def print_results(frame_counter):
-    frequent_plates = {
-        plate: count
-        for plate, count in unique_license_plates.items()
-        if count >= MIN_OCCURENCES
-    }
-    if frame_counter % MIN_OCCURENCES == 0:
-        print("Recognized License Plates:", list(frequent_plates.keys()))
-        if frame_counter % (MIN_OCCURENCES * 10) == 0:
-            print(
-                "License Plates Counter:",
-                sorted(
-                    unique_license_plates.items(),
-                    key=lambda x: x[1],
-                    reverse=True,
-                ),
-            )
-
-
 def main():
     video_info = sv.VideoInfo.from_video_path(video_path=VIDEO_PATH)
     cap = cv2.VideoCapture(VIDEO_PATH)
@@ -223,11 +143,11 @@ def main():
             start = time()
 
             ret, frame = cap.read()
-            if not ret or frame_counter > 20:
+            if not ret or frame_counter > 60:
                 break
 
             frame = process_frame(frame, analysis_area)
-            print_results(frame_counter)
+            print_results(unique_license_plates, frame_counter)
             cv2.imshow("License Plate Recognition", frame)
 
             if SAVE_VIDEO:
@@ -241,7 +161,7 @@ def main():
     cap.release()
     cv2.destroyAllWindows()
 
-    save_recognized_plates()
+    save_recognized_plates(unique_license_plates)
 
 
 if __name__ == "__main__":
