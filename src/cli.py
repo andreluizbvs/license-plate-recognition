@@ -1,6 +1,6 @@
 import click
-from src.inference_approach1 import main as approach1_main
-from src.inference_approach2 import main as approach2_main
+from src.inference.inference_approach1 import main as approach1_main
+from src.inference.inference_approach2 import main as approach2_main
 
 
 @click.command()
