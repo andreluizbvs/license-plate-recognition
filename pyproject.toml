@@ -1,0 +1,28 @@
+[project]
+name = "plate-ocr"
+version = "0.1.0"
+description = "System that extract license plate information from images and videos"
+authors = [
+    {name = "andreluizbvs", email = "andreluizbvs@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "opencv-python (>=4.11.0.86,<5.0.0.0)",
+    "ultralytics (>=8.3.70,<9.0.0)",
+    "fast-plate-ocr (>=0.3.0,<0.4.0)",
+    "supervision (>=0.25.1,<0.26.0)",
+    "click (>=8.1.8,<9.0.0)"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+plate-ocr = "src.cli:cli"
+
+[tool.poetry]
+packages = [
+    { include = "src" }
+]

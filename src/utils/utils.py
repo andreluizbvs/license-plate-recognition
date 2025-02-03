@@ -5,7 +5,7 @@ import re
 import cv2
 import numpy as np
 
-from configs import (
+from src.configs import (
     IOU_PROPORTION,
     RESIZE_FACTOR,
     GREEN,
@@ -25,7 +25,7 @@ def generate_new_file_name(file_path):
     return new_file_path
 
 
-def save_recognized_plates(unique_license_plates):
+def save_recognized_plates(unique_license_plates, min_occurences=MIN_OCCURENCES):
     recognized_license_plates_file = generate_new_file_name(
         "recognized_license_plates.json"
     )
@@ -36,7 +36,7 @@ def save_recognized_plates(unique_license_plates):
     frequent_plates = {
         plate: count
         for plate, count in unique_license_plates.items()
-        if count >= MIN_OCCURENCES
+        if count >= min_occurences
     }
     license_plates_frequency = sorted(
         unique_license_plates.items(), key=lambda x: x[1], reverse=True

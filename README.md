@@ -4,16 +4,9 @@ Code repository for the a system that given an image, returns the all license pl
 
 ## Installation
 
-Create conda environment from this 
-...
 
 
-## Inference
-
-...
-
-
-# Chain of thought developing of this project
+# Chain of thought for 1st steps for developing this project
 
 ## 1. Uncertainties
 
@@ -56,7 +49,7 @@ Create conda environment from this
         - Lets say n is inference time for model 1, m is inference time for model 2 and k is inference time for model 3:
         - In a scene with v vehicles, the total inference time (only prediction and not considering preprocessing/postprocessing time, which are normally much faster than model prediction) in this case would be n + v * (m + k)
             - Just had a new idea: I could stitch together all the vehicles detected in one single image and run the license plate model on it only once. This would decrease the total inference time to n + m + v * k
-            - Apparently the available License plate detection/OCR models to the detection + OCR in one step, that would decrease again the total inference time to n + m + k (ideal)
+            - Not a good idea actually, because of image resizing for model input.
         - Sometimes is hard enough to keep one inference in real-time!
 
 ### Approach #2
@@ -109,7 +102,7 @@ Also provide some code or pseudocode that code serve as a starting point to this
 ```
 
 
-## 5. Look for some data to test the system
+## 5. Looking for some data to test the system
 
 - Kaggle is a good place with free data
 - The web in general
@@ -124,7 +117,13 @@ Some useful datasets/links:
 
 Found 2 sample videos for iterative testing (here a the links: [sample.mp4](https://drive.google.com/file/d/1otrBjr0GycUVr-gTBb4pAyjD85ftQ5tO/view?usp=drive_link) and [sample2.mp4](https://drive.google.com/file/d/1mk2VZE2TNbFAHUaUVZK4O4uYDrWYnWih/view?usp=drive_link))
 
-## References (models, weights, data, etc.)
+## 6. Looking for some useful references (models, weights, data, etc.)
 
 - https://github.com/ankandrew/fast-plate-ocr
 - https://github.com/Muhammad-Zeerak-Khan/Automatic-License-Plate-Recognition-using-YOLOv8
+
+
+## 7. Coding...
+
+## 8. Bad results
+ - Thinking of ways to 
