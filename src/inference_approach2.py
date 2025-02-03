@@ -33,10 +33,15 @@ MIN_LICENSE_PLATE_AREA_PERCENTAGE = (
 license_plate_model = YOLO(
     LICENSE_PLATE_WEIGHTS_PATH
 )  # Detect license plates in vehicles bboxes
-ocr_model = ONNXPlateRecognizer(
-    "global-plates-mobile-vit-v2-model", device="cpu"
-)  # Recognize license plates
-
+try:
+    ocr_model = ONNXPlateRecognizer(
+        "global-plates-mobile-vit-v2-model", device="cuda"
+    )  # Recognize license plates
+except Exception as e:
+    print("Error loading OCR model: ", e)
+    ocr_model = ONNXPlateRecognizer(
+        "global-plates-mobile-vit-v2-model", device="cpu"
+    )  # Recognize license plates
 # Results
 unique_license_plates = {}
 
@@ -119,7 +124,7 @@ def main(input_type, input_path):
                 start = time()
 
                 ret, frame = cap.read()
-                if not ret or frame_counter > 50:
+                if not ret:
                     break
 
                 frame = process_frame(frame, analysis_area)
