@@ -33,7 +33,6 @@ def generate_new_file_name(file_path):
 def save_recognized_plates(
     unique_license_plates, min_occurences=MIN_OCCURENCES
 ):
-    print(min_occurences)
     recognized_license_plates_file = generate_new_file_name(
         "recognized_license_plates.json"
     )
@@ -52,10 +51,10 @@ def save_recognized_plates(
 
     os.makedirs(BASE_DIR, exist_ok=True)
     recognized_license_plates_file = str(
-        BASE_DIR / 'results' / recognized_license_plates_file
+        BASE_DIR / "results" / recognized_license_plates_file
     )
     license_plates_frequency_file = str(
-        BASE_DIR / 'results' / license_plates_frequency_file
+        BASE_DIR / "results" / license_plates_frequency_file
     )
     json.dump(
         list(frequent_plates.items()), open(recognized_license_plates_file, "w")
@@ -65,15 +64,17 @@ def save_recognized_plates(
     )
 
 
-def print_results(unique_license_plates, frame_counter):
+def print_results(
+    unique_license_plates, frame_counter, min_occurences=MIN_OCCURENCES
+):
     frequent_plates = {
         plate: count
         for plate, count in unique_license_plates.items()
-        if count >= MIN_OCCURENCES
+        if count >= min_occurences
     }
-    if frame_counter % MIN_OCCURENCES == 0:
+    if frame_counter % min_occurences == 0:
         print("Recognized License Plates:", list(frequent_plates.keys()))
-        if frame_counter % (MIN_OCCURENCES * 10) == 0:
+        if frame_counter % (min_occurences * 10) == 0:
             print(
                 "License Plates Counter:",
                 sorted(

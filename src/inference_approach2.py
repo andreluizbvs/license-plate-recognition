@@ -22,7 +22,7 @@ from src.configs import (
     LICENSE_PLATE_WEIGHTS_PATH,
     CONF_TH,
     HEIGHT_PART_ANALYSYS,
-    MIN_OCCURENCES
+    MIN_OCCURENCES,
 )
 
 MIN_LICENSE_PLATE_AREA_PERCENTAGE = (
@@ -34,14 +34,15 @@ license_plate_model = YOLO(
     LICENSE_PLATE_WEIGHTS_PATH
 )  # Detect license plates in vehicles bboxes
 try:
+    # Recognize license plates
     ocr_model = ONNXPlateRecognizer(
         "global-plates-mobile-vit-v2-model", device="cuda"
-    )  # Recognize license plates
-except Exception as e:
-    print("Error loading OCR model: ", e)
+    )
+except Exception:
     ocr_model = ONNXPlateRecognizer(
         "global-plates-mobile-vit-v2-model", device="cpu"
-    )  # Recognize license plates
+    )
+
 # Results
 unique_license_plates = {}
 
@@ -52,11 +53,7 @@ def annotate_frame(frame, results, texts):
     for box, text in zip(results.boxes, texts):
         x1, y1, x2, y2 = map(int, box.xyxy.cpu().numpy().flatten())
         cls = int(box.cls.cpu().numpy())
-        label = (
-            f"{text}"
-            if text
-            else f"{license_plate_model.names[cls]}"
-        )
+        label = f"{text}" if text else f"{license_plate_model.names[cls]}"
         draw_area(frame, (x1, y1, x2, y2))
         draw_text(frame, label, x1, y1)
     return frame
@@ -92,7 +89,7 @@ def process_frame(frame, analysis_area):
 
 def main(input_type, input_path):
     min_occurences = MIN_OCCURENCES
-    if input_type == 'video':
+    if input_type == "video":
         video_info = sv.VideoInfo.from_video_path(video_path=input_path)
         cap = cv2.VideoCapture(input_path)
 
@@ -128,7 +125,9 @@ def main(input_type, input_path):
                     break
 
                 frame = process_frame(frame, analysis_area)
-                print_results(unique_license_plates, frame_counter)
+                print_results(
+                    unique_license_plates, frame_counter, min_occurences
+                )
                 save_recognized_plates(unique_license_plates, min_occurences)
                 cv2.imshow("License Plate Recognition", frame)
 
@@ -142,7 +141,7 @@ def main(input_type, input_path):
 
         cap.release()
 
-    if input_type == 'image':
+    if input_type == "image":
         min_occurences = 1
         frame = cv2.imread(input_path)
         h, w = frame.shape[:2]
@@ -153,11 +152,9 @@ def main(input_type, input_path):
             (HEIGHT_PART_ANALYSYS - 1) * h // HEIGHT_PART_ANALYSYS,
         )
         frame = process_frame(frame, analysis_area)
-        print_results(unique_license_plates, 0)
+        print_results(unique_license_plates, 0, min_occurences)
         save_recognized_plates(unique_license_plates, min_occurences)
         cv2.imshow("License Plate Recognition", frame)
         cv2.waitKey(0)
-        
-    cv2.destroyAllWindows()
 
-    save_recognized_plates(unique_license_plates, min_occurences)
+    cv2.destroyAllWindows()
