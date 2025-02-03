@@ -24,5 +24,6 @@ plate-ocr = "src.cli:cli"
 
 [tool.poetry]
 packages = [
-    { include = "src" }
+    { include = "src" },
+    { include = "weights" }
 ]
