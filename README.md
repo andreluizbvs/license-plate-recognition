@@ -53,11 +53,11 @@ plate-ocr --type image --path path/to/your/image.jpg
 
 #### Options
 
-`--approach`: Choose the approach to use: 1 (slower & more accurate) or 2 (faster & less accurate). Default is 2. More details on the approaches check the report below.
-`--type`: Specify the type of input (video or image). This option is required.
-`--path`: Path to the video or image file. This option is required.
+- `--approach`: Choose the approach to use: 1 (slower & more accurate) or 2 (faster & less accurate). Default is 2. **More details on the approaches in the report below.**
+- `--type`: Specify the type of input (video or image). This option is required.
+- `--path`: Path to the video or image file. This option is required.
 
-# Chain of thought for 1st steps for developing this project
+# Chain of thought for developing this project
 
 ## 1. Uncertainties
 
@@ -152,6 +152,8 @@ Given the context above, return me two roadmaps with detailed steps and all impo
 Also provide some code or pseudocode that code serve as a starting point to this project.
 ```
 
+Very little help here, actually. I chose to use an old project as a starting point and I will be communicating with GitHub Copilot to accelerate development.
+
 
 ## 5. Looking for some data to test the system
 
@@ -166,10 +168,11 @@ Some useful datasets/links:
 - https://github.com/ramajoballester/UC3M-LP
 - https://www.kaggle.com/datasets/fareselmenshawii/large-license-plate-dataset
 
-Found 2 sample videos for iterative testing (here a the links: [sample.mp4](https://drive.google.com/file/d/1otrBjr0GycUVr-gTBb4pAyjD85ftQ5tO/view?usp=drive_link) and [sample2.mp4](https://drive.google.com/file/d/1mk2VZE2TNbFAHUaUVZK4O4uYDrWYnWih/view?usp=drive_link))
+Found 2 sample videos for iterative testing (here are the links: [sample.mp4](https://drive.google.com/file/d/1otrBjr0GycUVr-gTBb4pAyjD85ftQ5tO/view?usp=drive_link) and [sample2.mp4](https://drive.google.com/file/d/1mk2VZE2TNbFAHUaUVZK4O4uYDrWYnWih/view?usp=drive_link))
 
 ## 6. Looking for some useful references (models, weights, data, etc.)
 
+These are very helpful!
 - https://github.com/ankandrew/fast-plate-ocr
 - https://github.com/Muhammad-Zeerak-Khan/Automatic-License-Plate-Recognition-using-YOLOv8
 
@@ -178,20 +181,25 @@ Found 2 sample videos for iterative testing (here a the links: [sample.mp4](http
 
 ## 8. Bad results
  - Thinking of ways to improve such as:
-    1. Image preprocess (traditional techniques):
+    1. Image preprocessing (traditional techniques):
         - Grayscale conversion (helped)
         - CLAHE (helped!)
         - Binarization (didn't help)
         - Morphological operations (didn't help)
             - Erosion
             - Dilation 
-    2. Minimum area strategy: 
-        - Filter low confidence detections
+    2. Filter low confidence detections
+    3. Minimum area strategy: 
         - Very small bounding boxes related to the input image/frame doesn't need to be analysed since they very likely won't be successfully OCR'ed (due to image resizing for model input)
             - This decreases "blinking" detections and objects too far away
-    3. Plate frequency counter strategy:
+    4. Plate frequency counter strategy:
         - To be really considered recognized in videos, plates need to be recognized a reasonable amount of times
 
 ## 9. Finally some good results
  - The strategies above help immensely!
+ - Created the poetry project and built a release. Model weights inside it. Tested and everything worked, apparently fine.
+ - In CPU, approach #1 takes 400~500ms per frame
+ - In CPU, approach #2 takes 100~200ms per frame
+ - No GPU tested, but it would probably be way faster
+ - Need to run the results through a dataset to check the accuracy (but it would be difficult to check the accuracy due to the adopted strategies [what to compare, exactly])
  - The end (or the beginning?)
