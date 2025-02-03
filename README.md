@@ -177,4 +177,21 @@ Found 2 sample videos for iterative testing (here a the links: [sample.mp4](http
 ## 7. Coding...
 
 ## 8. Bad results
- - Thinking of ways to 
+ - Thinking of ways to improve such as:
+    1. Image preprocess (traditional techniques):
+        - Grayscale conversion (helped)
+        - CLAHE (helped!)
+        - Binarization (didn't help)
+        - Morphological operations (didn't help)
+            - Erosion
+            - Dilation 
+    2. Minimum area strategy: 
+        - Filter low confidence detections
+        - Very small bounding boxes related to the input image/frame doesn't need to be analysed since they very likely won't be successfully OCR'ed (due to image resizing for model input)
+            - This decreases "blinking" detections and objects too far away
+    3. Plate frequency counter strategy:
+        - To be really considered recognized in videos, plates need to be recognized a reasonable amount of times
+
+## 9. Finally some good results
+ - The strategies above help immensely!
+ - The end (or the beginning?)
