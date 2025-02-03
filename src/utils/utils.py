@@ -51,7 +51,7 @@ def save_recognized_plates(
         unique_license_plates.items(), key=lambda x: x[1], reverse=True
     )
 
-    os.makedirs(BASE_DIR, exist_ok=True)
+    os.makedirs(str(BASE_DIR / "results"), exist_ok=True)
     recognized_license_plates_file = str(
         BASE_DIR / "results" / recognized_license_plates_file
     )
