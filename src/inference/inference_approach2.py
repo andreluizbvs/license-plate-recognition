@@ -12,6 +12,9 @@ from src.configs import (
 
 
 class InferenceApproach2(BaseInference):
+    def __init__(self):
+        super().__init__(approach_type="2")
+
     def process_frame(self, frame, analysis_area, min_plate_area):
         frame = self.preprocess(frame)
         results = self.predict(frame)

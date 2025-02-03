@@ -11,6 +11,8 @@ from src.configs import (
     IOU_PROPORTION,
     RESIZE_FACTOR,
     GREEN,
+    BLACK,
+    WHITE,
     CONTOUR_THICKNESS,
     MIN_LICENSE_PLATE_AREA_PERCENTAGE,
     MIN_OCCURENCES,
@@ -24,7 +26,7 @@ def generate_new_file_name(file_path):
     base, ext = os.path.splitext(file_path)
     counter = 1
     new_file_path = f"{base}_run{counter}{ext}"
-    while os.path.exists(new_file_path):
+    while os.path.exists(str(BASE_DIR / "results" / new_file_path)):
         counter += 1
         new_file_path = f"{base}_run{counter}{ext}"
     return new_file_path
@@ -102,15 +104,40 @@ def draw_area(frame, area):
         frame,
         (area[0], area[1]),
         (area[2], area[3]),
+        BLACK,
+        CONTOUR_THICKNESS + 2,
+    )
+    cv2.rectangle(
+        frame,
+        (area[0], area[1]),
+        (area[2], area[3]),
         GREEN,
         CONTOUR_THICKNESS,
     )
     return frame
 
 
-def draw_text(frame, label, x1, y1):
+def draw_text(frame, label, x1, y1, color=GREEN):
+    BASE_THICKNESS = 3
     cv2.putText(
-        frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.0, GREEN, 3
+        frame,
+        label,
+        (x1, y1 - 10),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1.0,
+        BLACK,
+        BASE_THICKNESS + 2,
+        lineType=cv2.LINE_AA,
+    )
+    cv2.putText(
+        frame,
+        label,
+        (x1, y1 - 10),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1.0,
+        color,
+        BASE_THICKNESS - 1,
+        lineType=cv2.LINE_AA,
     )
     return frame
 
@@ -203,3 +230,34 @@ def extract_text_from_bounding_boxes(
                     unique_license_plates.get(cleaned_text, 0) + 1
                 )
     return texts
+
+
+def show_approach_type(approach_type, frame):
+    text = f"Approach #{approach_type}"
+    font_scale = 1
+    thickness = 2
+    margin = 5
+    (_, text_height), _ = cv2.getTextSize(
+        text, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness
+    )
+    org = (margin, text_height + margin)
+    cv2.putText(
+        frame,
+        text,
+        org,
+        cv2.FONT_HERSHEY_SIMPLEX,
+        font_scale,
+        BLACK,
+        thickness + 3,
+        cv2.LINE_AA,
+    )
+    cv2.putText(
+        frame,
+        text,
+        org,
+        cv2.FONT_HERSHEY_SIMPLEX,
+        font_scale,
+        WHITE,
+        thickness,
+        cv2.LINE_AA,
+    )

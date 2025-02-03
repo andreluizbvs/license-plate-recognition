@@ -20,7 +20,7 @@ from src.utils.utils import (
 
 class InferenceApproach1(BaseInference):
     def __init__(self):
-        super().__init__()
+        super().__init__(approach_type="1")
         self.vehicle_model = YOLO(VEHICLE_WEIGHTS_PATH)
 
     def predict(self, frame, analysis_area):
@@ -68,18 +68,19 @@ class InferenceApproach1(BaseInference):
             frame, results, self.ocr_model, self.unique_license_plates
         )
 
-    def postprocess(self, frame, license_plate_crops):
+    def postprocess(self, frame, license_plate_crops, analysis_area):
         for license_plate_crop in license_plate_crops:
             x1, y1, x2, y2, texts = license_plate_crop
             draw_area(frame, [x1, y1, x2, y2])
             if texts:
                 draw_text(frame, f"{texts[0]}", x1, y1)
+        draw_area(frame, analysis_area)
         return adaptive_resize(frame)
 
     def process_frame(self, frame, analysis_area, min_plate_area=MIN_LICENSE_PLATE_AREA_PERCENTAGE):
         frame = self.preprocess(frame)
         license_plate_crops = self.predict(frame, analysis_area)
-        return self.postprocess(frame, license_plate_crops)
+        return self.postprocess(frame, license_plate_crops, analysis_area)
 
 
 def main(input_type, input_path):

@@ -4,6 +4,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Constants
 GREEN = (0, 255, 0)
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
 CONTOUR_THICKNESS = 5
 RESIZE_FACTOR = 2
 SAVE_VIDEO = False
