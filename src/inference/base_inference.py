@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from time import time
 
 import cv2
-import supervision as sv
 from fast_plate_ocr import ONNXPlateRecognizer
 from ultralytics import YOLO
 
@@ -13,6 +12,7 @@ from src.utils.utils import (
     print_results,
     save_recognized_plates,
     show_approach_type,
+    adaptive_resize
 )
 from src.configs import (
     CONTOUR_THICKNESS,
@@ -84,7 +84,6 @@ class BaseInference(ABC):
         print("\n\nStarting License Plate Recognition...\n")
         min_occurences = MIN_OCCURENCES
         if input_type == "video":
-            video_info = sv.VideoInfo.from_video_path(video_path=input_path)
             cap = cv2.VideoCapture(input_path)
 
             w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -94,6 +93,7 @@ class BaseInference(ABC):
 
             print(f"Original video res. (width x height): {w}x{h}")
             print("Original video FPS: ", cap.get(cv2.CAP_PROP_FPS))
+            print(f"Original video frame count: {cap.get(cv2.CAP_PROP_FRAME_COUNT)}")
             print(
                 "Original video duration: ",
                 cap.get(cv2.CAP_PROP_FRAME_COUNT) / cap.get(cv2.CAP_PROP_FPS),
@@ -102,37 +102,38 @@ class BaseInference(ABC):
 
             frame_counter = 0
 
-            with sv.VideoSink(
-                target_path=input_path.replace(".mp4", "_labeled.mp4"),
-                video_info=video_info,
-            ) as s:
-                while True:
-                    start = time()
+            frame = cap.read()[1]
+            first_frame = adaptive_resize(frame)
+            output_path = input_path.split("/")[-1].split(".")[0] + "_out.avi"
+            s = cv2.VideoWriter(
+                output_path,
+                cv2.VideoWriter_fourcc(*"MJPG"),
+                cap.get(cv2.CAP_PROP_FPS),
+                (first_frame.shape[1], first_frame.shape[0]),
+            )
+            while True:
+                start = time()
 
-                    ret, frame = cap.read()
-                    if not ret:
-                        break
+                ret, frame = cap.read()
+                if not ret:
+                    break
 
-                    frame = self.process_frame(
-                        frame, analysis_area, min_plate_area
-                    )
-                    print_results(
-                        self.unique_license_plates,
-                        frame_counter,
-                        min_occurences,
-                    )
-                    show_approach_type(self.approach_type, frame)
-                    cv2.imshow("License Plate Recognition", frame)
+                frame = self.process_frame(frame, analysis_area, min_plate_area)
+                print_results(
+                    self.unique_license_plates,
+                    frame_counter,
+                    min_occurences,
+                )
+                show_approach_type(self.approach_type, frame)
+                cv2.imshow("License Plate Recognition", frame)
 
-                    if SAVE_VIDEO:
-                        s.write_frame(frame=frame)
+                if SAVE_VIDEO:
+                    s.write(frame)
 
-                    frame_counter += 1
-                    total_proc_time = int((time() - start) * 1000)
-                    if cv2.waitKey(max(1, 33 - total_proc_time)) & 0xFF == ord(
-                        "q"
-                    ):
-                        break
+                frame_counter += 1
+                total_proc_time = int((time() - start) * 1000)
+                if cv2.waitKey(max(1, 33 - total_proc_time)) & 0xFF == ord("q"):
+                    break
             print_results(
                 self.unique_license_plates,
                 frame_counter,
@@ -140,6 +141,7 @@ class BaseInference(ABC):
             )
             save_recognized_plates(self.unique_license_plates, min_occurences)
             cap.release()
+            s.release()
 
         if input_type == "image":
             min_occurences = 1
